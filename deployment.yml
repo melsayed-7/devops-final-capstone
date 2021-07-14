@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: capstone
+  name: devops-capstone
 spec:
   selector:
     matchLabels:
@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: capstone
-        image: diablo2050/capestone:v1
+        image: melsayed7/devops-capestone
         imagePullPolicy: Always
         resources:
           limits:
