@@ -1,3 +1,0 @@
-Github repo URL:
-
-https://github.com/Diablo2050/udacity-aws-capestone
