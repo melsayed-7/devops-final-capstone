@@ -49,6 +49,13 @@ jobs:
           docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PSWD}
           docker build -t melsayed7/devops-capstone:${CIRCLE_WORKFLOW_ID:0:7} .
 
+
+    - run:
+        name: push docker image
+        command: |
+          docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PSWD}
+          docker push melsayed7/devops-capstone:${CIRCLE_WORKFLOW_ID:0:7}
+
     - run:
         name: test response
         command: |
@@ -66,13 +73,6 @@ jobs:
               docker stop fastapi
               exit 1
             fi
-
-    - run:
-        name: push docker image
-        command: |
-          docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PSWD}
-          docker push melsayed7/devops-capstone:${CIRCLE_WORKFLOW_ID:0:7}
-
   # create-deployment:
   #   executor: aws-eks/python3
   #   parameters:
@@ -108,8 +108,8 @@ jobs:
 workflows:
   default:
     jobs:
-      - lint
-      - docker-build:
-          requires: [lint]
+      # - lint
+      - docker-build
+          # requires: [lint]
       - k8s-deploy:
           requires: [docker-build]
