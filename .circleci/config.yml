@@ -57,9 +57,9 @@ jobs:
             export response=$(curl -s $url)
             echo "This is response $response"
             if [[ $response == *"Moustafa"* ]]; then
-              docker stop flaskapp
+              docker stop fastapi
             else
-              docker stop flaskapp
+              docker stop fastapi
               exit 1
             fi
             echo "CIRCLE CI WORKFLOW ID ${CIRCLE_WORKFLOW_ID:0:7}"
