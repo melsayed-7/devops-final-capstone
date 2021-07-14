@@ -60,7 +60,7 @@ jobs:
         name: test response
         command: |
             # docker run -d --rm --name fastapi -p 8000:80 melsayed7/devops-capstone:${CIRCLE_WORKFLOW_ID:0:7}
-            docker run -d  -p 8000:80 melsayed7/devops-capstone:${CIRCLE_WORKFLOW_ID:0:7}
+            docker run -d -rm --name fastapi -p 8000:80 melsayed7/devops-capstone:${CIRCLE_WORKFLOW_ID:0:7}
             sleep 5
             docker container ls
             export url="http://localhost:8000"
