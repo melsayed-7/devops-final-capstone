@@ -1,0 +1,78 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+# Use the same Docker base as the project
+      - image: python:3.8-buster
+
+    working_directory: ~/repo
+
+    steps:
+    - checkout
+
+# Download and cache dependencies
+    - restore_cache:
+        keys:
+        - v1-dependencies-{{ checksum "requirements.txt" }}
+        # fallback to using the latest cache if no exact match is found
+        - v1-dependencies-
+
+    - run:
+        name: install dependencies
+        command: |
+          #apk add --no-cache git make bash
+          python3 -m venv venv
+          . venv/bin/activate
+          make install
+          # Install hadolint
+          # wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
+          # chmod +x /bin/hadolint
+    - save_cache:
+        paths:
+        - ./venv
+        key: v1-dependencies-{{ checksum "requirements.txt" }}
+
+    # run lint!
+    - run:
+        name: run lint
+        command: |
+          . venv/bin/activate
+          make lint 
+
+  docker-build:
+    docker:
+      
+    working_directory: ~/repo
+    machine: true
+    steps:
+    - checkout
+    - run:
+        name: build docker image
+        command: bash docker_build.sh
+    - run:
+        name: push docker image
+        command: |
+          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          docker push diablo2050/capestone:${CIRCLE_WORKFLOW_ID:0:7}
+
+  k8s-deploy:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+    - checkout
+    - run:
+        name: deploy to k8s cluster
+        command: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          aws eks update-kubeconfig --region us-east-1 --name udacity-capstone
+          chmod +x kubectl
+          ./kubectl set image deployment/capstone  capstone=diablo2050/capestone:${CIRCLE_WORKFLOW_ID:0:7}
+
+workflows:
+  default:
+    jobs:
+      - build
+      - docker-build:
+          requires: [build]
+      - k8s-deploy:
+          requires: [docker-build]
